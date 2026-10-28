@@ -1,0 +1,28 @@
+services:
+  kissanmart:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kissanmart-app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=False
+      - PORT=8000
+      - DATABASE_URL=sqlite:///./app.db
+      - BACKEND_CORS_ORIGINS=*
+      - GEMMA_API_KEY=${GEMMA_API_KEY:-}
+      - GEMMA_MODEL=gemma-2-9b-it
+    volumes:
+      - kissanmart-data:/app/saved_masks
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  kissanmart-data:
+

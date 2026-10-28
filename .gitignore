@@ -1,0 +1,98 @@
+# ==============================================================================
+# Kissanmart Unified Application .gitignore
+# ==============================================================================
+
+# Node / Frontend
+node_modules/
+*/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-debug.log*
+.eslintcache
+.vite/
+frontend/dist/
+
+# Python / Backend
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+.venv/
+*/.venv/
+venv/
+*/venv/
+ENV/
+env/
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+*.env
+backend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# Databases & local state
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+app.db
+backend/app.db
+
+# Generated SAM Masks & scratch images (preserve directory with .gitkeep)
+backend/saved_masks/*
+!backend/saved_masks/.gitkeep
+backend/app/static/masks/*
+!backend/app/static/masks/.gitkeep
+
+# Testing & Coverage
+.pytest_cache/
+*/.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# IDE & Operating System
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary / Scratch scripts
+misc/
+e.py
+*.log
+

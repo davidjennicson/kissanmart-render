@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: kissanmart
+    runtime: docker
+    plan: starter
+    region: oregon
+    envVars:
+      - key: DEBUG
+        value: "false"
+      - key: GEMMA_API_KEY
+        sync: false
+      - key: GEMMA_MODEL
+        value: "gemma-2-9b-it"
+      - key: BACKEND_CORS_ORIGINS
+        value: "*"
+

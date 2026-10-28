@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FastAPI Backend Reference & Implementation Guide</title>
+  <style>
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-card: #1e293b;
+      --bg-code: #0b1120;
+      --border-color: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --accent-blue: #38bdf8;
+      --accent-purple: #c084fc;
+      --accent-amber: #fbbf24;
+      --sidebar-width: 290px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      line-height: 1.6;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar Navigation */
+    #sidebar {
+      width: var(--sidebar-width);
+      background-color: #0b1329;
+      border-right: 1px solid var(--border-color);
+      height: 100vh;
+      position: sticky;
+      top: 0;
+      overflow-y: auto;
+      padding: 1.75rem 1rem 2rem 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.25rem;
+    }
+
+    .brand-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-group-title {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64748b;
+      margin: 1.25rem 0 0.5rem 0.5rem;
+      font-weight: 700;
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .nav-links a {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.45rem 0.65rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.86rem;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .nav-links a:hover, .nav-links a.active {
+      color: var(--text-main);
+      background-color: #1e293b;
+    }
+
+    .nav-links a.active {
+      color: var(--accent);
+      font-weight: 600;
+      border-left: 3px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+    }
+
+    .step-num {
+      font-size: 0.7rem;
+      background: #334155;
+      color: #cbd5e1;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+
+    /* Main Content Area */
+    #content {
+      flex: 1;
+      padding: 2.5rem 3.5rem;
+      max-width: 1100px;
+      overflow-x: hidden;
+    }
+
+    header {
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1.75rem;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, #f8fafc 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 750px;
+    }
+
+    .hero-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1rem;
+    }
+
+    .tag {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      color: var(--accent-blue);
+    }
+
+    .tag-green { color: var(--accent); border-color: rgba(16, 185, 129, 0.3); }
+    .tag-purple { color: var(--accent-purple); border-color: rgba(192, 132, 252, 0.3); }
+
+    /* Content Sections */
+    section {
+      margin-bottom: 3.5rem;
+      scroll-margin-top: 2rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      margin: 1.5rem 0 0.5rem;
+    }
+
+    p {
+      color: #cbd5e1;
+      margin-bottom: 1rem;
+    }
+
+    /* Cards */
+    .card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-highlight {
+      border-left: 4px solid var(--accent);
+    }
+
+    .card-tip {
+      border-left: 4px solid var(--accent-blue);
+      background: rgba(56, 189, 248, 0.05);
+    }
+
+    .card-warning {
+      border-left: 4px solid var(--accent-amber);
+      background: rgba(251, 191, 36, 0.05);
+    }
+
+    /* Code Blocks */
+    .code-wrapper {
+      position: relative;
+      margin: 1rem 0 1.5rem;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #334155;
+      background-color: var(--bg-code);
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #162032;
+      padding: 0.45rem 1rem;
+      font-size: 0.8rem;
+      font-family: monospace;
+      color: #94a3b8;
+      border-bottom: 1px solid #293548;
+    }
+
+    .copy-btn {
+      background: #253347;
+      border: 1px solid #3b4c66;
+      color: #cbd5e1;
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      background: var(--accent);
+      color: #042f2e;
+      border-color: var(--accent);
+    }
+
+    pre {
+      padding: 1.1rem;
+      overflow-x: auto;
+      font-family: "JetBrains Mono", "Fira Code", Consolas, Monaco, monospace;
+      font-size: 0.87rem;
+      line-height: 1.55;
+      color: #e2e8f0;
+    }
+
+    code {
+      font-family: inherit;
+    }
+
+    /* Syntax Highlighting Fake Sim */
+    .kw { color: #f472b6; font-weight: 600; }
+    .fn { color: #60a5fa; }
+    .str { color: #a7f3d0; }
+    .cls { color: #fbbf24; }
+    .cm { color: #64748b; font-style: italic; }
+    .num { color: #fdba74; }
+
+    /* Architecture Flow Diagram */
+    .diagram-container {
+      background: #111a2e;
+      border: 1px solid #2d3b55;
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 1.5rem 0;
+      text-align: center;
+    }
+
+    .flow-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .flow-box {
+      background: #1e293b;
+      border: 1px solid #3b82f6;
+      border-radius: 8px;
+      padding: 0.75rem 1.1rem;
+      min-width: 140px;
+      text-align: center;
+    }
+
+    .flow-box-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+    }
+
+    .flow-box-desc {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    .flow-arrow {
+      color: var(--accent);
+      font-size: 1.3rem;
+      font-weight: bold;
+    }
+
+    /* Checklist */
+    .checklist {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 0.85rem;
+      background: #162032;
+      border: 1px solid #273549;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s ease;
+    }
+
+    .checklist-item:hover {
+      background: #1b273d;
+    }
+
+    .checklist-item input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    /* Table Styles */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.25rem 0;
+      font-size: 0.88rem;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border: 1px solid var(--border-color);
+    }
+
+    th {
+      background-color: #162032;
+      color: var(--accent-blue);
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) {
+      background-color: #16203260;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 900px) {
+      body {
+        flex-direction: column;
+      }
+      #sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+      }
+      #content {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div class="brand-badge">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+      </svg>
+      <span>FastAPI Reference</span>
+    </div>
+    <div class="brand-sub">Backend Blueprint Guide</div>
+
+    <div class="nav-group-title">Foundations</div>
+    <ul class="nav-links">
+      <li><a href="#overview"><span class="step-num">00</span> Scaffold Structure</a></li>
+      <li><a href="#architecture"><span class="step-num">01</span> Architecture Flow</a></li>
+      <li><a href="#setup"><span class="step-num">02</span> Environment & Setup</a></li>
+    </ul>
+
+    <div class="nav-group-title">Building Blocks (Step-by-Step)</div>
+    <ul class="nav-links">
+      <li><a href="#step-config"><span class="step-num">03</span> Config & Settings</a></li>
+      <li><a href="#step-db"><span class="step-num">04</span> Database & Session</a></li>
+      <li><a href="#step-models"><span class="step-num">05</span> SQLAlchemy Models</a></li>
+      <li><a href="#step-schemas"><span class="step-num">06</span> Pydantic Schemas</a></li>
+      <li><a href="#step-crud"><span class="step-num">07</span> Services & CRUD</a></li>
+      <li><a href="#step-deps"><span class="step-num">08</span> Dependency Injection</a></li>
+      <li><a href="#step-routes"><span class="step-num">09</span> Routes & API v1</a></li>
+      <li><a href="#step-main"><span class="step-num">10</span> Main App Assembly</a></li>
+    </ul>
+
+    <div class="nav-group-title">Quality & Deployment</div>
+    <ul class="nav-links">
+      <li><a href="#step-testing"><span class="step-num">11</span> Pytest Integration</a></li>
+      <li><a href="#step-docker"><span class="step-num">12</span> Docker & Run</a></li>
+      <li><a href="#checklist-section"><span class="step-num">13</span> Implementation Checklist</a></li>
+    </ul>
+  </nav>
+
+  <!-- Main Content -->
+  <main id="content">
+
+    <header>
+      <h1>FastAPI Scaffold Reference Guide</h1>
+      <p class="subtitle">
+        A step-by-step master reference for filling out the zero-code scaffold into a production-ready, clean-architecture FastAPI backend.
+      </p>
+      <div class="hero-tags">
+        <span class="tag tag-green">FastAPI 0.115+</span>
+        <span class="tag">SQLAlchemy 2.0</span>
+        <span class="tag tag-purple">Pydantic v2</span>
+        <span class="tag">Clean Architecture</span>
+        <span class="tag">Pytest Ready</span>
+      </div>
+    </header>
+
+    <!-- SECTION: Overview -->
+    <section id="overview">
+      <h2>1. The Scaffold Structure</h2>
+      <p>
+        The backend has been structured using industry standard separation of concerns.
+        No business code has been forced upon you — each file sits in its proper layer with docstrings ready to be filled out.
+      </p>
+
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>Path</th>
+              <th>Layer</th>
+              <th>Responsibility</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>app/main.py</code></td>
+              <td>Application Entry</td>
+              <td>Initializes FastAPI app, CORS, lifespan handlers, and registers API routers.</td>
+            </tr>
+            <tr>
+              <td><code>app/core/config.py</code></td>
+              <td>Configuration</td>
+              <td>Environment parsing, JWT keys, database URLs using <code>pydantic-settings</code>.</td>
+            </tr>
+            <tr>
+              <td><code>app/db/session.py</code></td>
+              <td>Persistence Session</td>
+              <td>Creates the SQLAlchemy Engine, SessionLocal, and DB generator.</td>
+            </tr>
+            <tr>
+              <td><code>app/db/base.py</code></td>
+              <td>ORM Registry</td>
+              <td>SQLAlchemy DeclarativeBase imported by all models for Alembic discovery.</td>
+            </tr>
+            <tr>
+              <td><code>app/models/</code></td>
+              <td>Database Entities</td>
+              <td>SQLAlchemy ORM tables with mapped column types and relationships.</td>
+            </tr>
+            <tr>
+              <td><code>app/schemas/</code></td>
+              <td>Data Contracts</td>
+              <td>Pydantic models for request validation and response serialization.</td>
+            </tr>
+            <tr>
+              <td><code>app/services/</code></td>
+              <td>Business / CRUD</td>
+              <td>Pure data operations and domain logic isolated from HTTP routing.</td>
+            </tr>
+            <tr>
+              <td><code>app/api/deps.py</code></td>
+              <td>Dependencies</td>
+              <td>FastAPI <code>Depends()</code> providers (DB session, current user authentication).</td>
+            </tr>
+            <tr>
+              <td><code>app/api/v1/</code></td>
+              <td>HTTP Routing</td>
+              <td>API routes organized cleanly by domain (e.g. <code>health.py</code>, <code>items.py</code>).</td>
+            </tr>
+            <tr>
+              <td><code>tests/</code></td>
+              <td>Quality Assurance</td>
+              <td>Pytest fixtures with in-memory SQLite and endpoint assertion tests.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION: Architecture Flow -->
+    <section id="architecture">
+      <h2>2. Request-Response Architecture Flow</h2>
+      <p>
+        Understanding how data travels through this layout ensures you never mix HTTP concerns with database queries:
+      </p>
+
+      <div class="diagram-container">
+        <div class="flow-row">
+          <div class="flow-box">
+            <div class="flow-box-title">1. HTTP Request</div>
+            <div class="flow-box-desc">JSON / Headers</div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box">
+            <div class="flow-box-title">2. API Router</div>
+            <div class="flow-box-desc"><code>app/api/v1/</code></div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box">
+            <div class="flow-box-title">3. Dependencies</div>
+            <div class="flow-box-desc"><code>deps.py (get_db)</code></div>
+          </div>
+        </div>
+
+        <div class="flow-row" style="margin-top: 1rem;">
+          <div class="flow-box" style="border-color: var(--accent);">
+            <div class="flow-box-title">6. HTTP Response</div>
+            <div class="flow-box-desc">Validated JSON</div>
+          </div>
+          <div class="flow-arrow">&larr;</div>
+          <div class="flow-box">
+            <div class="flow-box-title">5. Pydantic Schema</div>
+            <div class="flow-box-desc"><code>schemas/ (Read)</code></div>
+          </div>
+          <div class="flow-arrow">&larr;</div>
+          <div class="flow-box">
+            <div class="flow-box-title">4. Service / CRUD</div>
+            <div class="flow-box-desc"><code>services/ &amp; models/</code></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: Setup -->
+    <section id="setup">
+      <h2>3. Environment &amp; Virtualenv Setup</h2>
+      <p>
+        Set up an isolated virtual environment and install the required dependencies from your terminal:
+      </p>
+
+      <div class="code-wrapper">
+        <div class="code-header">
+          <span>Terminal (PowerShell / Bash)</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code><span class="cm"># Navigate to backend directory</span>
+cd backend
+
+<span class="cm"># Create Python virtual environment</span>
+python -m venv .venv
+
+<span class="cm"># Activate virtual environment (Windows PowerShell)</span>
+.venv\Scripts\Activate.ps1
+<span class="cm"># Or on Linux / macOS / Git Bash:</span>
+<span class="cm"># source .venv/bin/activate</span>
+
+<span class="cm"># Install dependencies</span>
+pip install -r requirements.txt
+
+<span class="cm"># Copy environment template</span>
+cp .env.example .env</code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION: Step 1 - Config -->
+    <section id="step-config">
+      <h2>Step 1: Configuration (<code>app/core/config.py</code>)</h2>
+      <p>
+        Use Pydantic v2's <code>pydantic-settings</code> to load environment variables type-safely:
+      </p>
+
+      <div class="code-wrapper">
+        <div class="code-header">
+          <span>app/core/config.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code><span class="kw">from</span> pydantic_settings <span class="kw">import</span> BaseSettings, SettingsConfigDict
+<span class="kw">from</span> pydantic <span class="kw">import</span> computed_field
+
+
+<span class="kw">class</span> <span class="cls">Settings</span>(BaseSettings):
+    app_name: str = <span class="str">"kissanmart-backend"</span>
+    debug: bool = <span class="cls">True</span>
+    api_v1_str: str = <span class="str">"/api/v1"</span>
+    secret_key: str = <span class="str">"super-secret-key-change-in-production"</span>
+
+    <span class="cm"># Database connection string</span>
+    database_url: str = <span class="str">"sqlite:///./app.db"</span>
+
+    <span class="cm"># CORS allowed origins</span>
+    backend_cors_origins: str = <span class="str">"http://localhost:3000,http://localhost:5173"</span>
+
+    @computed_field
+    @property
+    <span class="kw">def</span> <span class="fn">cors_origins</span>(self) -> list[str]:
+        <span class="kw">return</span> [origin.strip() <span class="kw">for</span> origin <span class="kw">in</span> self.backend_cors_origins.split(<span class="str">","</span>) <span class="kw">if</span> origin.strip()]
+
+    model_config = SettingsConfigDict(env_file=<span class="str">".env"</span>, extra=<span class="str">"ignore"</span>)
+
+
+settings = Settings()</code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION: Step 2 - Database -->
+    <section id="step-db">
+      <h2>Step 2: Database &amp; Session (<code>app/db/</code>)</h2>
+      <p>
+        Define the declarative base in <code>base.py</code>, then configure the engine and session factory in <code>session.py</code>.
+      </p>
+
+      <div class="code-wrapper">
+        <div class="code-header">
+          <span>app/db/base.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code><span class="kw">from</span> sqlalchemy.orm <span class="kw">import</span> DeclarativeBase
+
+
+<span class="kw">class</span> <span class="cls">Base</span>(DeclarativeBase):
+    <span class="str">"""Declarative base class for all database models."""</span>
+    <span class="kw">pass</span></code></pre>
+      </div>
+
+      <div class="code-wrapper">
+        <div class="code-header">
+          <span>app/db/session.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code><span class="kw">from</span> collections.abc <span class="kw">import</span> Generator
+<span class="kw">from</span> sqlalchemy <span class="kw">import</span> create_engine
+<span class="kw">from</span> sqlalchemy.orm <span class="kw">import</span> sessionmaker, Session
+<span class="kw">from</span> app.core.config <span class="kw">import</span> settings
+
+<span class="cm"># SQLite requires check_same_thread=False; other DBs (Postgres/MySQL) do not</span>
+connect_args = {<span class="str">"check_same_thread"</span>: <span class="cls">False</span>} <span class="kw">if</span> settings.database_url.startswith(<span class="str">"sqlite"</span>) <span class="kw">else</span> {}
+
+engine = create_engine(settings.database_url, connect_args=connect_args)
+SessionLocal = sessionmaker(autocommit=<span class="cls">False</span>, autoflush=<span class="cls">False</span>, bind=engine)
+
+
+<span class="kw">def</span> <span class="fn">get_db</span>() -> Generator[Session, <span class="cls">None</span>, <span class="cls">None</span>]:
+    <span class="str">"""FastAPI dependency that yields a database session per request."""</span>
+    db = SessionLocal()
+    <span class="kw">try</span>:
+        <span class="kw">yield</span> db
+    <span class="kw">finally</span>:
+        db.close()</code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION: Step 3 - Models -->
+    <section id="step-models">
+      <h2>Step 3: SQLAlchemy 2.0 ORM Models (<code>app/models/</code>)</h2>
+      <p>
+        Use modern SQLAlchemy 2.0 <code>Mapped[...]</code> and <code>mapped_column()</code> syntax for full type safety:
+      </p>
+
+      <div class="code-wrapper">
+        <div class="code-header">
+          <span>app/models/item.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code><span class="kw">from</span> sqlalchemy <span class="kw">import</span> Integer, String, Float, Boolean, Text
+<span class="kw">from</span> sqlalchemy.orm <span class="kw">import</span> Mapped, mapped_column
+<span class="kw">from</span> app.db.base <span class="kw">import</span> Base
+
+
+<span class="kw">class</span> <span class="cls">Item</span>(Base):
+    __tablename__ = <span class="str">"items"</span>
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=<span class="cls">True</span>, index=<span class="cls">True</span>)
+    name: Mapped[str] = mapped_column(String(100), index=<span class="cls">True</span>, nullable=<span class="cls">False</span>)
+    description: Mapped[str | <span class="cls">None</span>] = mapped_column(Text, nullable=<span class="cls">True</span>)
+    price: Mapped[float] = mapped_column(Float, nullable=<span class="cls">False</span>, default=<span class="num">0.0</span>)
+    is_available: Mapped[bool] = mapped_column(Boolean, default=<span class="cls">True</span>)</code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION: Step 4 - Schemas -->
+    <section id="step-schemas">
+      <h2>Step 4: Pydantic Validation Schemas (<code>app/schemas/</code>)</h2>
+      <p>
+        Separate schemas into <code>Base</code>, <code>Create</code>, <code>Update</code>, and <code>Read</code> contracts.
+      </p>
+
+      <div class="code-wrapper">
+        <div class="code-header">
+          <span>app/schemas/item.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code><span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel, ConfigDict, Field
+
+
+<span class="kw">class</span> <span class="cls">ItemBase</span>(BaseModel):
+    name: str = Field(..., min_length=<span class="num">1</span>, max_length=<span class="num">100</span>)
+    description: str | <span class="cls">None</span> = <span class="cls">None</span>
+    price: float = Field(ge=<span class="num">0.0</span>)
+    is_available: bool = <span class="cls">True</span>
+
+
+<span class="kw">class</span> <span class="cls">ItemCreate</span>(ItemBase):
+    <span class="kw">pass</span>
+
+
+<span class="kw">class</span> <span class="cls">ItemUpdate</span>(BaseModel):
+    name: str | <span class="cls">None</span> = <span class="cls">None</span>
+    description: str | <span class="cls">None</span> = <span class="cls">None</span>
+    price: float | <span class="cls">None</span> = Field(<span class="cls">None</span>, ge=<span class="num">0.0</span>)
+    is_available: bool | <span class="cls">None</span> = <span class="cls">None</span>
+
+
+<span class="kw">class</span> <span class="cls">ItemRead</span>(ItemBase):
+    id: int
+
+    <span class="cm"># Enables direct serialization of SQLAlchemy ORM objects</span>
+    model_config = ConfigDict(from_attributes=<span class="cls">True</span>)</code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION: Step 5 - Services -->
+    <section id="step-crud">
+      <h2>Step 5: Service / CRUD Layer (<code>app/services/</code>)</h2>
+      <p>
+        Keep database queries decoupled from your HTTP endpoints:
+      </p>
+
+      <div class="code-wrapper">
+        <div class="code-header">
+          <span>app/services/item.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code><span class="kw">from</span> sqlalchemy.orm <span class="kw">import</span> Session
+<span class="kw">from</span> app.models.item <span class="kw">import</span> Item
+<span class="kw">from</span> app.schemas.item <span class="kw">import</span> ItemCreate, ItemUpdate
+
+
+<span class="kw">def</span> <span class="fn">get_item</span>(db: Session, item_id: int) -> Item | <span class="cls">None</span>:
+    <span class="kw">return</span> db.get(Item, item_id)
+
+
+<span class="kw">def</span> <span class="fn">list_items</span>(db: Session, skip: int = <span class="num">0</span>, limit: int = <span class="num">100</span>) -> list[Item]:
+    <span class="kw">return</span> db.query(Item).offset(skip).limit(limit).all()
+
+
+<span class="kw">def</span> <span class="fn">create_item</span>(db: Session, payload: ItemCreate) -> Item:
+    item = Item(**payload.model_dump())
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    <span class="kw">return</span> item
+
+
+<span class="kw">def</span> <span class="fn">update_item</span>(db: Session, item: Item, payload: ItemUpdate) -> Item:
+    update_data = payload.model_dump(exclude_unset=<span class="cls">True</span>)
+    <span class="kw">for</span> field, value <span class="kw">in</span> update_data.items():
+        setattr(item, field, value)
+    db.commit()
+    db.refresh(item)
+    <span class="kw">return</span> item
+
+
+<span class="kw">def</span> <span class="fn">delete_item</span>(db: Session, item: Item) -> <span class="cls">None</span>:
+    db.delete(item)
+    db.commit()</code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION: Step 6 - Dependencies -->
+    <section id="step-deps">
+      <h2>Step 6: Dependency Injection (<code>app/api/deps.py</code>)</h2>
+      <p>
+        Centralize dependencies such as database sessions or user authentication:
+      </p>
+
+      <div class="code-wrapper">
+        <div class="code-header">
+          <span>app/api/deps.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code><span class="kw">from</span> typing <span class="kw">import</span> Annotated
+<span class="kw">from</span> fastapi <span class="kw">import</span> Depends
+<span class="kw">from</span> sqlalchemy.orm <span class="kw">import</span> Session
+<span class="kw">from</span> app.db.session <span class="kw">import</span> get_db
+
+<span class="cm"># Reusable type annotation for database sessions across endpoints</span>
+SessionDep = Annotated[Session, Depends(get_db)]</code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION: Step 7 - Routing -->
+    <section id="step-routes">
+      <h2>Step 7: API Routing (<code>app/api/v1/</code>)</h2>
+      <p>
+        Define endpoints in modular files, then collect them in <code>api.py</code>:
+      </p>
+
+      <div class="code-wrapper">
+        <div class="code-header">
+          <span>app/api/v1/endpoints/health.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code><span class="kw">from</span> fastapi <span class="kw">import</span> APIRouter
+
+router = APIRouter(tags=[<span class="str">"health"</span>])
+
+
+@router.get(<span class="str">"/health"</span>)
+<span class="kw">def</span> <span class="fn">health_check</span>() -> dict[str, str]:
+    <span class="kw">return</span> {<span class="str">"status"</span>: <span class="str">"ok"</span>, <span class="str">"service"</span>: <span class="str">"kissanmart-backend"</span>}</code></pre>
+      </div>
+
+      <div class="code-wrapper">
+        <div class="code-header">
+          <span>app/api/v1/endpoints/items.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code><span class="kw">from</span> fastapi <span class="kw">import</span> APIRouter, HTTPException, status
+<span class="kw">from</span> app.api.deps <span class="kw">import</span> SessionDep
+<span class="kw">from</span> app.schemas.item <span class="kw">import</span> ItemCreate, ItemRead, ItemUpdate
+<span class="kw">from</span> app.services <span class="kw">import</span> item <span class="kw">as</span> item_service
+
+router = APIRouter(prefix=<span class="str">"/items"</span>, tags=[<span class="str">"items"</span>])
+
+
+@router.get(<span class="str">""</span>, response_model=list[ItemRead])
+<span class="kw">def</span> <span class="fn">read_items</span>(db: SessionDep, skip: int = <span class="num">0</span>, limit: int = <span class="num">100</span>):
+    <span class="kw">return</span> item_service.list_items(db, skip=skip, limit=limit)
+
+
+@router.post(<span class="str">""</span>, response_model=ItemRead, status_code=status.HTTP_201_CREATED)
+<span class="kw">def</span> <span class="fn">create_item</span>(payload: ItemCreate, db: SessionDep):
+    <span class="kw">return</span> item_service.create_item(db, payload)
+
+
+@router.get(<span class="str">"/{item_id}"</span>, response_model=ItemRead)
+<span class="kw">def</span> <span class="fn">read_item</span>(item_id: int, db: SessionDep):
+    item = item_service.get_item(db, item_id)
+    <span class="kw">if</span> <span class="kw">not</span> item:
+        <span class="kw">raise</span> HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=<span class="str">"Item not found"</span>)
+    <span class="kw">return</span> item
+
+
+@router.patch(<span class="str">"/{item_id}"</span>, response_model=ItemRead)
+<span class="kw">def</span> <span class="fn">update_item</span>(item_id: int, payload: ItemUpdate, db: SessionDep):
+    item = item_service.get_item(db, item_id)
+    <span class="kw">if</span> <span class="kw">not</span> item:
+        <span class="kw">raise</span> HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=<span class="str">"Item not found"</span>)
+    <span class="kw">return</span> item_service.update_item(db, item, payload)
+
+
+@router.delete(<span class="str">"/{item_id}"</span>, status_code=status.HTTP_204_NO_CONTENT)
+<span class="kw">def</span> <span class="fn">delete_item</span>(item_id: int, db: SessionDep):
+    item = item_service.get_item(db, item_id)
+    <span class="kw">if</span> <span class="kw">not</span> item:
+        <span class="kw">raise</span> HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=<span class="str">"Item not found"</span>)
+    item_service.delete_item(db, item)</code></pre>
+      </div>
+
+      <div class="code-wrapper">
+        <div class="code-header">
+          <span>app/api/v1/api.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code><span class="kw">from</span> fastapi <span class="kw">import</span> APIRouter
+<span class="kw">from</span> app.api.v1.endpoints <span class="kw">import</span> health, items
+
+api_router = APIRouter()
+api_router.include_router(health.router)
+api_router.include_router(items.router)</code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION: Step 8 - Main -->
+    <section id="step-main">
+      <h2>Step 8: Main App Assembly (<code>app/main.py</code>)</h2>
+      <p>
+        Assemble the routers, configure CORS for frontend communication, and register startup lifespans:
+      </p>
+
+      <div class="code-wrapper">
+        <div class="code-header">
+          <span>app/main.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code><span class="kw">from</span> contextlib <span class="kw">import</span> asynccontextmanager
+<span class="kw">from</span> fastapi <span class="kw">import</span> FastAPI
+<span class="kw">from</span> fastapi.middleware.cors <span class="kw">import</span> CORSMiddleware
+
+<span class="kw">from</span> app.api.v1.api <span class="kw">import</span> api_router
+<span class="kw">from</span> app.core.config <span class="kw">import</span> settings
+<span class="kw">from</span> app.db.base <span class="kw">import</span> Base
+<span class="kw">from</span> app.db.session <span class="kw">import</span> engine
+<span class="kw">import</span> app.models.item  <span class="cm"># noqa: F401 - ensures tables register with Base</span>
+
+
+@asynccontextmanager
+<span class="kw">async def</span> <span class="fn">lifespan</span>(app: FastAPI):
+    <span class="cm"># Create tables on startup (in production, use Alembic migrations)</span>
+    Base.metadata.create_all(bind=engine)
+    <span class="kw">yield</span>
+
+
+<span class="kw">def</span> <span class="fn">create_app</span>() -> FastAPI:
+    app = FastAPI(
+        title=settings.app_name,
+        debug=settings.debug,
+        lifespan=lifespan,
+    )
+
+    <span class="cm"># CORS setup</span>
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=<span class="cls">True</span>,
+        allow_methods=[<span class="str">"*"</span>],
+        allow_headers=[<span class="str">"*"</span>],
+    )
+
+    <span class="cm"># Register API v1 routes</span>
+    app.include_router(api_router, prefix=settings.api_v1_str)
+
+    <span class="kw">return</span> app
+
+
+app = create_app()</code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION: Step 9 - Testing -->
+    <section id="step-testing">
+      <h2>Step 9: Pytest Testing Suite (<code>tests/</code>)</h2>
+      <p>
+        Set up testing with an isolated in-memory SQLite database and test client overrides:
+      </p>
+
+      <div class="code-wrapper">
+        <div class="code-header">
+          <span>tests/conftest.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code><span class="kw">import</span> pytest
+<span class="kw">from</span> fastapi.testclient <span class="kw">import</span> TestClient
+<span class="kw">from</span> sqlalchemy <span class="kw">import</span> create_engine
+<span class="kw">from</span> sqlalchemy.orm <span class="kw">import</span> sessionmaker
+<span class="kw">from</span> sqlalchemy.pool <span class="kw">import</span> StaticPool
+
+<span class="kw">from</span> app.db.base <span class="kw">import</span> Base
+<span class="kw">from</span> app.db.session <span class="kw">import</span> get_db
+<span class="kw">from</span> app.main <span class="kw">import</span> create_app
+
+
+@pytest.fixture
+<span class="kw">def</span> <span class="fn">client</span>():
+    <span class="cm"># Fast in-memory SQLite database for test isolation</span>
+    engine = create_engine(
+        <span class="str">"sqlite://"</span>,
+        connect_args={<span class="str">"check_same_thread"</span>: <span class="cls">False</span>},
+        poolclass=StaticPool,
+    )
+    Base.metadata.create_all(bind=engine)
+    TestingSessionLocal = sessionmaker(autocommit=<span class="cls">False</span>, autoflush=<span class="cls">False</span>, bind=engine)
+
+    <span class="kw">def</span> <span class="fn">override_get_db</span>():
+        db = TestingSessionLocal()
+        <span class="kw">try</span>:
+            <span class="kw">yield</span> db
+        <span class="kw">finally</span>:
+            db.close()
+
+    app = create_app()
+    app.dependency_overrides[get_db] = override_get_db
+
+    <span class="kw">with</span> TestClient(app) <span class="kw">as</span> c:
+        <span class="kw">yield</span> c</code></pre>
+      </div>
+
+      <div class="code-wrapper">
+        <div class="code-header">
+          <span>tests/test_api.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code><span class="kw">def</span> <span class="fn">test_health</span>(client):
+    res = client.get(<span class="str">"/api/v1/health"</span>)
+    <span class="kw">assert</span> res.status_code == <span class="num">200</span>
+    <span class="kw">assert</span> res.json()[<span class="str">"status"</span>] == <span class="str">"ok"</span>
+
+
+<span class="kw">def</span> <span class="fn">test_create_and_get_item</span>(client):
+    payload = {<span class="str">"name"</span>: <span class="str">"Organic Fertilizer"</span>, <span class="str">"price"</span>: <span class="num">49.99</span>, <span class="str">"description"</span>: <span class="str">"High quality"</span>}
+    create_res = client.post(<span class="str">"/api/v1/items"</span>, json=payload)
+    <span class="kw">assert</span> create_res.status_code == <span class="num">201</span>
+    data = create_res.json()
+    <span class="kw">assert</span> data[<span class="str">"name"</span>] == <span class="str">"Organic Fertilizer"</span>
+
+    item_id = data[<span class="str">"id"</span>]
+    get_res = client.get(f<span class="str">"/api/v1/items/{item_id}"</span>)
+    <span class="kw">assert</span> get_res.status_code == <span class="num">200</span>
+    <span class="kw">assert</span> get_res.json()[<span class="str">"price"</span>] == <span class="num">49.99</span></code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION: Step 10 - Running & Docker -->
+    <section id="step-docker">
+      <h2>Step 10: Running &amp; Dockerizing</h2>
+
+      <div class="card card-highlight">
+        <h3>Local Development Server</h3>
+        <p>Start the development server with hot-reload enabled:</p>
+        <div class="code-wrapper">
+          <div class="code-header">
+            <span>Terminal</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre><code>uvicorn app.main:app --reload --port 8000</code></pre>
+        </div>
+        <p>Explore interactive documentation at:
+          <br>&bull; Swagger UI: <strong><a href="http://localhost:8000/docs" target="_blank" style="color: var(--accent-blue);">http://localhost:8000/docs</a></strong>
+          <br>&bull; ReDoc: <strong><a href="http://localhost:8000/redoc" target="_blank" style="color: var(--accent-blue);">http://localhost:8000/redoc</a></strong>
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>Run Automated Tests</h3>
+        <div class="code-wrapper">
+          <div class="code-header">
+            <span>Terminal</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre><code>pytest -v</code></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Containerize with Docker</h3>
+        <div class="code-wrapper">
+          <div class="code-header">
+            <span>Terminal</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre><code><span class="cm"># Build image</span>
+docker build -t kissanmart-backend .
+
+<span class="cm"># Run container</span>
+docker run -p 8000:8000 --env-file .env kissanmart-backend</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: Implementation Checklist -->
+    <section id="checklist-section">
+      <h2>Implementation Checklist</h2>
+      <p>Use this interactive checklist to track your progress as you build out the backend:</p>
+
+      <ul class="checklist">
+        <li class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation()">
+          <span>Step 1: Set up Python virtual environment and run <code>pip install -r requirements.txt</code></span>
+        </li>
+        <li class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation()">
+          <span>Step 2: Copy <code>.env.example</code> to <code>.env</code> and configure settings in <code>app/core/config.py</code></span>
+        </li>
+        <li class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation()">
+          <span>Step 3: Define Base declarative class in <code>app/db/base.py</code> and engine in <code>app/db/session.py</code></span>
+        </li>
+        <li class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation()">
+          <span>Step 4: Define your models in <code>app/models/</code> with mapped column types</span>
+        </li>
+        <li class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation()">
+          <span>Step 5: Write Pydantic request and response schemas in <code>app/schemas/</code></span>
+        </li>
+        <li class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation()">
+          <span>Step 6: Implement business logic and CRUD operations in <code>app/services/</code></span>
+        </li>
+        <li class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation()">
+          <span>Step 7: Wire dependencies (<code>get_db</code>, auth) in <code>app/api/deps.py</code></span>
+        </li>
+        <li class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation()">
+          <span>Step 8: Build endpoints in <code>app/api/v1/endpoints/</code> and register in <code>api.py</code></span>
+        </li>
+        <li class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation()">
+          <span>Step 9: Initialize FastAPI with CORS &amp; routers in <code>app/main.py</code></span>
+        </li>
+        <li class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation()">
+          <span>Step 10: Run <code>pytest</code> and start the server with <code>uvicorn app.main:app --reload</code></span>
+        </li>
+      </ul>
+    </section>
+
+  </main>
+
+  <script>
+    // Copy button helper
+    function copyCode(btn) {
+      const pre = btn.parentElement.nextElementSibling;
+      const text = pre.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btn.innerText;
+        btn.innerText = "Copied!";
+        btn.style.backgroundColor = "var(--accent)";
+        btn.style.color = "#042f2e";
+        setTimeout(() => {
+          btn.innerText = originalText;
+          btn.style.backgroundColor = "";
+          btn.style.color = "";
+        }, 1500);
+      });
+    }
+
+    // Toggle checklist item
+    function toggleCheck(item) {
+      const cb = item.querySelector('input[type="checkbox"]');
+      cb.checked = !cb.checked;
+      if (cb.checked) {
+        item.style.opacity = "0.6";
+        item.style.textDecoration = "line-through";
+      } else {
+        item.style.opacity = "1";
+        item.style.textDecoration = "none";
+      }
+    }
+
+    // Sidebar active link highlighting on scroll
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.nav-links a');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop - 100;
+        if (pageYOffset >= sectionTop) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${current}`) {
+          link.classList.add('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

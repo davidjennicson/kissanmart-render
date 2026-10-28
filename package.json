@@ -1,0 +1,25 @@
+{
+  "name": "kissanmart",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Kissanmart - Maharashtra AgriTech Platform with AI Call Agent & 3D Farm Digital Twin",
+  "scripts": {
+    "postinstall": "npm --prefix frontend install",
+    "build": "npm --prefix frontend run build",
+    "start": "python -m uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port 8000",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "python -m uvicorn app.main:app --app-dir backend --reload --port 8000",
+    "test": "pytest backend/tests"
+  },
+  "keywords": [
+    "agritech",
+    "fastapi",
+    "react",
+    "threejs",
+    "ai-agent",
+    "digital-twin"
+  ],
+  "author": "Kissanmart Team",
+  "license": "MIT"
+}
+
